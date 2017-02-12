@@ -23,6 +23,7 @@ usage() {
 	cat <<USAGE
 Usage: $0 -f <filename> -n <name> -s <size>
 
+Options:
 	-d <image description> (optional, default: "<NAME> <VERSION> KVM Triton")
 	-D <disk driver> (optional, default: "virtio")
 	-f <filename of VM image> (required)
@@ -77,7 +78,7 @@ while getopts d:D:f:n:N:o:s:v:h:? OPTION; do
 done
 
 if [[ -z $filename || -z $name || -z $image_size ]]; then
-	echo "FATAL: All of -f, -n, -s and -v are required."
+	echo "FATAL: All of -f, -n, and -s are required."
 	usage
 fi
 
