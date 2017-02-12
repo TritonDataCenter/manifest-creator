@@ -1,0 +1,136 @@
+#!/usr/bin/env bash
+#
+# Copyright (c) 2017 Joyent Inc., All rights reserved.
+#
+
+set -euo pipefail
+IFS=$'\n\t'
+
+NOW=$(date -u +%Y-%m-%dT%TZ)
+VM_UUID=$(uuid)
+SUM=/usr/bin/sum
+description=
+filename=
+kernel=
+min_platform=
+name=
+image_size=
+version=
+homepage=
+
+usage() {
+	cat <<USAGE
+Usage: $0 -f <filename> -k <kernel_version> -m <min_platform> -n <name>
+
+Options:
+	-d <image description> (optional, default: "<NAME> <VERSION> lx-brand Triton image")
+	-f <filename of image> (required)
+	-k <kernel version for the image> (required)
+	-m <min_platform> (required)
+	-n <name of image> (required)
+	-v <version of image> (optional, default: YYYMMDDHHMM)
+	-h <homepage link> (optional, default: https://docs.joyent.com/images/)
+
+Example:
+
+	$0 -f alpine-20150319.zfs.gz -k 3.14.36 -m 20150316T201553Z -n lx-alpine
+
+USAGE
+	exit 1
+}
+
+while getopts d:f:k:m:n:s:v:h:? OPTION; do
+	case $OPTION in
+	d)
+		description=${OPTARG}
+		;;
+	f)
+		filename=${OPTARG}
+		;;
+	k)
+		kernel=${OPTARG}
+		;;
+	m)
+		min_platform=${OPTARG}
+		;;
+	n)
+		name=${OPTARG}
+		;;
+	s)
+		image_size=${OPTARG}
+		;;
+	v)
+		version=${OPTARG}
+		;;
+	h)
+		homepage=${OPTARG}
+		;;
+	\?)
+		usage
+		;;
+	esac
+done
+
+if [[ -z $filename || -z $kernel || -z $min_platform || -z $name ]]; then
+	echo "FATAL: All of -f, -k, -m, and -n are required."
+	usage
+fi
+
+if [[ -z $description ]]; then
+	description="$name $version lx-brand Triton image"
+fi
+
+if [[ ! -f $filename ]]; then
+	echo "FATAL: $filename does not exist."
+	usage
+fi
+
+if [[ -z $version ]]; then
+	version=$(date +%Y%m%d%H%M)
+fi
+
+if [[ -z $homepage ]]; then
+	homepage="https://docs.joyent.com/images/"
+fi
+
+shasum=$($SUM -x sha1 "$filename" | cut -d' ' -f1)
+filesize=$(wc -c < "$filename")
+
+cat <<EOF
+{
+	"v": "2",
+	"name": "$name",
+	"version": "$version",
+	"type": "lx-dataset",
+	"description": "$description",
+	"homepage": "$homepage",
+	"published_at": "$NOW",
+	"os": "linux",
+	"image_size": "$image_size",
+	"files": [
+		{
+			"sha1": "$shasum",
+			"size": $filesize,
+			"compression": "gzip"
+		}
+	],
+	"requirements": {
+		"networks": [
+			{
+				"name": "net0",
+				"description": "public"
+			},
+			"min_platform": {
+				"7.0": "$min_platform"
+			},
+			"brand": "lx"
+		]
+	},
+	"uuid": "$VM_UUID",
+	"public": false,
+	"owner": "00000000-0000-0000-0000-000000000000",
+	"tags": {
+		"kernel_version": "$kernel"
+	}
+}
+EOF

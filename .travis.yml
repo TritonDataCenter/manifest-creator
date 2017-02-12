@@ -7,4 +7,5 @@ addons:
     - shellcheck
 script:
   - bash -n create-kvm-manifest
-  - shellcheck -s bash create-kvm-manifest
+  - bash -n create-lx-manifest
+  - shellcheck -s bash create-kvm-manifest create-lx-manifest
