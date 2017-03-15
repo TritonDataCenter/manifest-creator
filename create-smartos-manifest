@@ -23,7 +23,7 @@ Usage: $0 -f <filename> -m <min_platform> -n <name>
 Options:
 	-d <image description> (optional, default: "<NAME> <VERSION> lx-brand Triton image")
 	-f <filename of image> (required)
-	-m <min_platform> (required)
+	-m <min_platform> (optional, default: 20141030T081701Z)
 	-n <name of image> (required)
 	-v <version of image> (optional, default: YYYMMDDHHMM)
 	-h <homepage link> (optional, default: https://docs.joyent.com/images/)
@@ -62,17 +62,26 @@ while getopts d:f:m:n:v:h:? OPTION; do
 	esac
 done
 
-if [[ -z $filename || -z $min_platform || -z $name ]]; then
-	echo "FATAL: All of -f, -k, -m, and -n are required."
-	usage
+if [[ -z $description ]]; then
+	description="$name $version SmartOS Triton image"
 fi
 
-if [[ -z $description ]]; then
-	description="$name $version lx-brand Triton image"
+if [[ -z $filename ]]; then
+	echo "FATAL: Filename (-f) is required."
+	usage
 fi
 
 if [[ ! -f $filename ]]; then
 	echo "FATAL: $filename does not exist."
+	usage
+fi
+
+if [[ -z $min_platform ]]; then
+	min_platform="20141030T081701Z"
+fi
+
+if [[ -z $name ]]; then
+	echo "FATAL: Name of image (-n) is required."
 	usage
 fi
 
