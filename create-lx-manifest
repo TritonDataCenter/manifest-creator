@@ -14,7 +14,6 @@ filename=
 kernel=
 min_platform=
 name=
-image_size=
 version=
 homepage=
 
@@ -39,7 +38,7 @@ USAGE
 	exit 1
 }
 
-while getopts d:f:k:m:n:s:v:h:? OPTION; do
+while getopts d:f:k:m:n:v:h:? OPTION; do
 	case $OPTION in
 	d)
 		description=${OPTARG}
@@ -55,9 +54,6 @@ while getopts d:f:k:m:n:s:v:h:? OPTION; do
 		;;
 	n)
 		name=${OPTARG}
-		;;
-	s)
-		image_size=${OPTARG}
 		;;
 	v)
 		version=${OPTARG}
@@ -106,7 +102,6 @@ cat <<EOF
 	"homepage": "$homepage",
 	"published_at": "$NOW",
 	"os": "linux",
-	"image_size": "$image_size",
 	"files": [
 		{
 			"sha1": "$shasum",
